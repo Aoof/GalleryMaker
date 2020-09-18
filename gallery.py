@@ -41,6 +41,7 @@ class Gallery:
         |    F (32-bit floating point pixels)
         """
         self.sw, self.sh = canvas
+        self.images = []
         self.result = Image.new(mode, canvas)
 
 
@@ -51,6 +52,10 @@ class Gallery:
         ----------
         sizes : tuple
         |    Syntax (width, height)
+
+        Returns
+        -------
+        [(ratio_x, ratio_y), change_value] -> list
         """
         closer = [(), 0] 
         x, y = sizes 
@@ -71,6 +76,10 @@ class Gallery:
         sizes : tuple
         |   Syntax (width, height)
         limit : int (Default 1000)
+
+        Returns
+        -------
+        [width, height] -> list
         """
         rx, ry = aspect_ratio
         w, h = sizes
@@ -78,31 +87,57 @@ class Gallery:
         closer = [0, 0]
         for i in range(limit):
             x, y = i * rx, i * ry
-            if abs(w-x) < abs(w-closer[0]) and abs(h-y) < abs(h-closer[1]) and (x >= w and y >= h):
+
+            conditions = {
+                "width": abs(w-x) < abs(w-closer[0]),
+                "height": abs(h-y) < abs(h-closer[1]),
+                "ishigher": (x > w and y > h)
+            }
+            if conditions["width"] and conditions["height"] and conditions["ishigher"]:
                 closer = [x, y]
         return closer
     
-    def addImage(self, image : Image.Image) -> Image.Image:
+    def addImage(self, image : Image.Image, bgcolor=(0, 0, 0, 0)) -> bool:
         """Adds image to canvas
         
         Parameters
         ----------
         image : Image.Image
         |    The image you want to add to the canvas
-        """
-        sizes, (w, h) = image.width(), image.height()
-        ratio, change = self.testRatios(sizes)
 
-        delta = abs(1-change)
+        Returns
+        -------
+        True if successfully added... False if something wrong happened
+        """
+        sizes = image.width, image.height
+        ratio = self.testRatios(sizes)[0]
+        lsizes = self.testSizes(ratio, sizes)
+        try:
+            background = Image.new("RGBA", lsizes, bgcolor) # Transparent Background with the last sizes needed
+            bg_w, bg_h = background.size
+            offset = ((bg_w - sizes[0]) // 2, (bg_h - sizes[1]) // 2)
+            background.paste(image, offset)
+            self.images.append(background)
+            return 1
+        except Exception:
+            return 0
 
 if __name__ == "__main__":
     gallery = Gallery((1200, 480))
     
-    sizes = (124, 169)
-    ratio = gallery.testRatios(sizes)
-    last_size = gallery.testSizes(ratio[0], sizes)
+    image = Image.open(os.path.join(os.path.dirname(__file__), "media\\unknown (4).png"))
 
+    sizes = image.width, image.height
+    ratio, _ = gallery.testRatios(sizes)
+    last_size = gallery.testSizes(ratio, sizes)
+    
     print("For size ({}x{}px)".format(sizes[0], sizes[1]),
-          "Aspect Ratio ({}:{})".format(ratio[0][0], ratio[0][1]), 
+          "Aspect Ratio ({}:{})".format(ratio[0], ratio[1]), 
           "Last size ({}x{}px)".format(last_size[0], last_size[1]), 
           sep="\n")
+
+    image.show()
+    input("Click enter to show the fixed sizes image..")
+    gallery.addImage(image, (255, 0, 0, 255))
+    gallery.images[0].show()
+          
