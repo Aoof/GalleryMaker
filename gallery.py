@@ -5,6 +5,25 @@ import os
 
 class Gallery:
     """Transforms multiple images into a single preset size canvas
+        
+    Parameters
+    ----------
+    canvas : tuple
+    |    Syntax (width, height)
+    |    Preset size for canvas
+    mode : str
+    |    1 (1-bit pixels, black and white, stored with one pixel per byte)
+    |    L (8-bit pixels, black and white)
+    |    P (8-bit pixels, mapped to any other mode using a color palette)
+    |    RGB (3x8-bit pixels, true color)
+    |    RGBA (4x8-bit pixels, true color with transparency mask)
+    |    CMYK (4x8-bit pixels, color separation)
+    |    YCbCr (3x8-bit pixels, color video format)
+    |    |    Note that this refers to the JPEG, and not the ITU-R BT.2020, standard
+    |    LAB (3x8-bit pixels, the L*a*b color space)
+    |    HSV (3x8-bit pixels, Hue, Saturation, Value color space)
+    |    I (32-bit signed integer pixels)
+    |    F (32-bit floating point pixels)
     """
     allowed_ar = [
         (32, 9),
@@ -19,27 +38,6 @@ class Gallery:
         (3, 1)
     ]
     def __init__(self, canvas, mode="RGBA"):
-        """Transforms multiple images into a single preset size canvas
-            
-        Parameters
-        ----------
-        canvas : tuple
-        |    Syntax (width, height)
-        |    Preset size for canvas
-        mode : str
-        |    1 (1-bit pixels, black and white, stored with one pixel per byte)
-        |    L (8-bit pixels, black and white)
-        |    P (8-bit pixels, mapped to any other mode using a color palette)
-        |    RGB (3x8-bit pixels, true color)
-        |    RGBA (4x8-bit pixels, true color with transparency mask)
-        |    CMYK (4x8-bit pixels, color separation)
-        |    YCbCr (3x8-bit pixels, color video format)
-        |    |    Note that this refers to the JPEG, and not the ITU-R BT.2020, standard
-        |    LAB (3x8-bit pixels, the L*a*b color space)
-        |    HSV (3x8-bit pixels, Hue, Saturation, Value color space)
-        |    I (32-bit signed integer pixels)
-        |    F (32-bit floating point pixels)
-        """
         self.sw, self.sh = canvas
         self.images = []
         self.result = Image.new(mode, canvas)
@@ -122,6 +120,7 @@ class Gallery:
         except Exception:
             return 0
 
+
 if __name__ == "__main__":
     gallery = Gallery((1200, 480))
     
@@ -140,4 +139,4 @@ if __name__ == "__main__":
     input("Click enter to show the fixed sizes image..")
     gallery.addImage(image, (255, 0, 0, 255))
     gallery.images[0].show()
-          
+
